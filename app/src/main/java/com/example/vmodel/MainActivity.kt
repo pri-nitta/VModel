@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
@@ -12,6 +14,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var txtContador: EditText
     lateinit var btnDados: Button
     lateinit var btnMostrar: Button
+    lateinit var mViewModel: MainViewModel
     var contador: Int = 0
 
     //cria a estrutura do projeto, inicia o layout
@@ -20,11 +23,31 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         logar(valor = "onCreate")
-
         initDados()
-        initContador()
         initClick()
-        validaContador()
+    }
+
+    private fun initDados() {
+        //implementação do view model
+        mViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        txtContador = findViewById(R.id.txtContador)
+        btnDados = findViewById(R.id.btnDados)
+        btnMostrar = findViewById(R.id.btnMostrar)
+
+        //observar a variável dentro do contexto e realizar ação
+        mViewModel.mContador.observe(this, Observer { valor ->
+            txtContador.setText(valor)
+        })
+    }
+
+    private fun initClick() {
+        btnDados.setOnClickListener{
+            mViewModel.contador()
+        }
+
+        btnMostrar.setOnClickListener {
+            Snackbar.make(it, "Valor Contador: ${mViewModel.mContador.value}", Snackbar.LENGTH_LONG).show()
+        }
     }
 
     override fun onStart() {
@@ -57,34 +80,4 @@ class MainActivity : AppCompatActivity() {
     private fun logar(tag: String = "Ciclo de vida", valor: String){
         Log.d(tag, valor)
     }
-
-    private fun validaContador() {
-        if(contador > 5){
-            contador = 0
-        }
-    }
-
-    private fun initClick() {
-       btnDados.setOnClickListener{
-           contador++
-           validaContador()
-           initContador()
-       }
-
-        btnMostrar.setOnClickListener {
-            Snackbar.make(it, "Valor Contador: ${contador.toString()}", Snackbar.LENGTH_LONG).show()
-        }
-    }
-
-    private fun initContador() {
-        txtContador.setText(contador.toString())
-    }
-
-    private fun initDados() {
-        txtContador = findViewById(R.id.txtContador)
-        btnDados = findViewById(R.id.btnDados)
-        btnMostrar = findViewById(R.id.btnMostrar)
-    }
-
-
 }
